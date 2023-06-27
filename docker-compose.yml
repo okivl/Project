@@ -1,0 +1,41 @@
+version: '3.4'
+
+networks:
+  api_to_db:
+    driver: bridge
+
+services:
+  project.api:
+    image: project:api
+    container_name: api
+    build:
+      context: .
+      dockerfile: src/Project.Api/Dockerfile
+    ports:
+        - "8000:80"
+        - "44348:443"
+    networks:
+        - api_to_db
+    depends_on:
+        - db
+    environment:
+      DB_CONNECTION_STRING: "Server=db;Port=5432;Database=FinanceDb;Username=postgres;Password=111"
+
+
+  db:
+    container_name: db
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 111
+      POSTGRES_DB: FinanceDb
+    ports:
+        - "5432:5432"
+    networks:
+        - api_to_db
+    volumes:
+        - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+    name: 'pgadata'
