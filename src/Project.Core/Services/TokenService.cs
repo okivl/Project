@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 
 namespace Project.Core.Services
 {
+    /// <inheritdoc cref="ITokenService"/>
     public class TokenService : ITokenService
     {
         public string GenerateAccessToken(IEnumerable<Claim> claims)
@@ -34,8 +35,8 @@ namespace Project.Core.Services
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
-                ValidateAudience = false,
-                ValidateIssuer = false,
+                ValidateAudience = true,
+                ValidateIssuer = true,
                 ValidateIssuerSigningKey = true,
                 ValidateLifetime = false,
                 ValidIssuer = AuthOptions.ISSUER,

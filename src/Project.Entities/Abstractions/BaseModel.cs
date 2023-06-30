@@ -1,4 +1,4 @@
-﻿namespace Project.Entities.Models
+﻿namespace Project.Entities.Abstractions
 {
     public class BaseModel
     {

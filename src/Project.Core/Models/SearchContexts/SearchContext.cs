@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Project.Core.Models.Abstractions;
+using System.ComponentModel.DataAnnotations;
 
-namespace Project.Core.Options.Params.Sort.Base
+namespace Project.Core.Models.SearchContexts
 {
-    public class DateRange
+    public class SearchContext : Pagination
     {
         [DataType(DataType.Date)]
         public DateTime DateFrom { get; set; } = DateTime.MinValue;

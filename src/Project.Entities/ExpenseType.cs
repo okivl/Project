@@ -1,4 +1,6 @@
-﻿namespace Project.Entities.Models
+﻿using Project.Entities.Abstractions;
+
+namespace Project.Entities
 {
     public class ExpenseType : BaseModel
     {

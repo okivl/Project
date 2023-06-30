@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.CreateUpdate;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
+using Project.Core.Models.CreateUpdate;
+using Project.Core.Models.SearchContexts;
 
 namespace Project.Api.Controllers.Admin
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
@@ -17,9 +14,7 @@ namespace Project.Api.Controllers.Admin
     {
         private readonly IIncomeService _incomeService;
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public AdminIncomesController(IIncomeService incomeService)
         {
             _incomeService = incomeService;
@@ -29,15 +24,12 @@ namespace Project.Api.Controllers.Admin
         /// <summary>
         /// Получение данных о всех доходах пользователей
         /// </summary>
-        /// <param name="dateRange">Параметры фильтрации по дате</param>
-        /// <param name="sortBy">Параметры сортировки</param>
-        /// <param name="pagination">Параметры пагинации</param>
-        /// <param name="id">Идентификатор пользователя</param>
+        /// <param name="searchContext">Параметры поиска</param>
         [HttpGet("/all_user_incomes")]
-        public async Task<IActionResult> AdminGetUserIncomes([FromQuery] DateRange dateRange, AdminIncomeExpenseSort sortBy, [FromQuery] Pagination pagination, Guid? id)
+        public async Task<IActionResult> AdminGetUserIncomes([FromQuery] AdminIncomeExpenseSearchContext searchContext)
         {
-            if (!id.HasValue) id = Guid.Empty;
-            var incomes = await _incomeService.AdminGetUserIncomes(dateRange, sortBy, pagination, id);
+            if (!searchContext.Id.HasValue) searchContext.Id = Guid.Empty;
+            var incomes = await _incomeService.AdminGetUserIncomes(searchContext);
             return Ok(incomes);
         }
 
@@ -59,7 +51,7 @@ namespace Project.Api.Controllers.Admin
         /// </summary>
         /// <param name="incomeCreate">Параметры создания дохода</param>
         [HttpPost]
-        public async Task<IActionResult> Create([FromQuery] IncomeCU incomeCreate)
+        public async Task<IActionResult> Create([FromQuery] IncomeCraeteUpdateParameters incomeCreate)
         {
             await _incomeService.Create(incomeCreate);
 
@@ -72,7 +64,7 @@ namespace Project.Api.Controllers.Admin
         /// <param name="id">Идентификатор дохода</param>
         /// <param name="incomeUpdate">Параметры обновления дохода</param>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromQuery] IncomeCU incomeUpdate)
+        public async Task<IActionResult> Update(Guid id, [FromQuery] IncomeCraeteUpdateParameters incomeUpdate)
         {
             await _incomeService.Update(id, incomeUpdate);
             return Ok();

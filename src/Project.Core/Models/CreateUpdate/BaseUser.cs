@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Project.Core.Options.Params.CreateUpdate
+namespace Project.Core.Models.CreateUpdate
 {
     public class BaseUser
     {

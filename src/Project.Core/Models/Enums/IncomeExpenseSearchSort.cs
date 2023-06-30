@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 
-namespace Project.Core.Options.Params.Sort
+namespace Project.Core.Models.Enums
 {
-    public enum AdminIncomeExpenseSort
+    public enum IncomeExpenseSearchSort
     {
         [Description("NoSort")]
         None,
@@ -11,8 +11,6 @@ namespace Project.Core.Options.Params.Sort
         [Description("Amount")]
         Amount,
         [Description("Type")]
-        Type,
-        [Description("User")]
-        User
+        Type
     }
 }

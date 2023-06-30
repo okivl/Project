@@ -1,24 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.CreateUpdate;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
+using Project.Core.Models.CreateUpdate;
+using Project.Core.Models.SearchContexts;
 
 namespace Project.Api.Controllers.Admin
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminExpensesController : ControllerBase
     {
         private readonly IExpenseService _expenseService;
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public AdminExpensesController(IExpenseService expenseService)
         {
             _expenseService = expenseService;
@@ -27,15 +22,12 @@ namespace Project.Api.Controllers.Admin
         /// <summary>
         /// Получение данных о всех расходах пользователей
         /// </summary>
-        /// <param name="dateRange">Параметры фильтрации по дате</param>
-        /// <param name="sortBy">Параметры сортировки</param>
-        /// <param name="pagination">Параметры пагинации</param>
-        /// <param name="id">Идентификатор пользователя</param>
+        /// <param name="searchContext">Параметры поиска</param>
         [HttpGet("/all_expenses")]
-        public async Task<IActionResult> AdminGetUserExpenses([FromQuery] DateRange dateRange, AdminIncomeExpenseSort sortBy, [FromQuery] Pagination pagination, Guid? id)
+        public async Task<IActionResult> AdminGetUserExpenses([FromQuery] AdminIncomeExpenseSearchContext searchContext)
         {
-            if (!id.HasValue) id = Guid.Empty;
-            var expense = await _expenseService.AdminGetUserExpenses(dateRange, sortBy, pagination, id);
+            if (!searchContext.Id.HasValue) searchContext.Id = Guid.Empty;
+            var expense = await _expenseService.AdminGetUserExpenses(searchContext);
             return Ok(expense);
         }
 
@@ -56,7 +48,7 @@ namespace Project.Api.Controllers.Admin
         /// </summary>
         /// <param name="expenseCreate">Параметры создания расхода</param>
         [HttpPost]
-        public async Task<IActionResult> Create([FromQuery] ExpenseCU expenseCreate)
+        public async Task<IActionResult> Create([FromQuery] ExpenseCreateUpdateParameters expenseCreate)
         {
             await _expenseService.Create(expenseCreate);
 
@@ -69,7 +61,7 @@ namespace Project.Api.Controllers.Admin
         /// <param name="id">Идентификатор расхода</param>
         /// <param name="expenseCreate">Параметры обновления расхода</param>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromQuery] ExpenseCU expenseCreate)
+        public async Task<IActionResult> Update(Guid id, [FromQuery] ExpenseCreateUpdateParameters expenseCreate)
         {
             await _expenseService.Update(id, expenseCreate);
             return Ok();

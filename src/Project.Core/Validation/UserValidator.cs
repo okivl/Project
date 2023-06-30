@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Project.Core.Options.Params.CreateUpdate;
+using Project.Core.Models.CreateUpdate;
 
 namespace Project.Core.Validation
 {

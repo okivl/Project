@@ -1,23 +1,17 @@
 using Project.Api;
-using Project.Core.Options;
+using Project.Core.Extensions;
 
 namespace Api
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     public class Program
     {
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().SeedData().Run();
+            CreateHostBuilder(args).Build().MigrateDb().SeedData().Run();
         }
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>

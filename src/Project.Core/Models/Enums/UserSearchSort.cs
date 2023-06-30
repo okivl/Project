@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 
-namespace Project.Core.Options.Params.Sort
+namespace Project.Core.Models.Enums
 {
-    public enum UserSort
+    public enum UserSearchSort
     {
         [Description("NoSort")]
         None,

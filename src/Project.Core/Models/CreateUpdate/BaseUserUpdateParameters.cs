@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Project.Core.Options.Params.CreateUpdate
+namespace Project.Core.Models.CreateUpdate
 {
-    public class UserReg : BaseUser
+    public class BaseUserUpdateParameters
     {
         [Required]
         public string FirstName { get; set; }
@@ -14,9 +14,5 @@ namespace Project.Core.Options.Params.CreateUpdate
         public DateTime DateBirth { get; set; }
         [Required]
         public string Email { get; set; }
-        [Required]
-        public string Login { get; set; }
-        [Required]
-        public string PasswordConfirm { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Project.Entities.Models
+﻿using Project.Entities.Abstractions;
+
+namespace Project.Entities
 {
     public class User : BaseModel
     {
@@ -10,8 +12,8 @@
         public string Login { get; set; }
         public string Password { get; set; }
         public Roles Role { get; set; }
-        public DateTime CreationTime { get; set; }
-        public DateTime UpdateTime { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public string RefreshToken { get; set; }
         public DateTime RefreshTokenExpiryTime { get; set; }
     }

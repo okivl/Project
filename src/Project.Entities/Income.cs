@@ -1,4 +1,6 @@
-﻿namespace Project.Entities.Models
+﻿using Project.Entities.Abstractions;
+
+namespace Project.Entities
 {
     public class Income : BaseModel
     {
@@ -6,7 +8,7 @@
         public decimal Amount { get; set; }
         public IncomeSource IncomeSource { get; set; }
         public User User { get; set; }
-        public DateTime CreateDate { get; set; }
-        public DateTime UpdateDate { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

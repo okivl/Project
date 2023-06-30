@@ -1,13 +1,11 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.CreateUpdate;
+using Project.Core.Models.CreateUpdate;
 
 namespace Project.Api.Controllers
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -15,9 +13,7 @@ namespace Project.Api.Controllers
         private readonly IValidator<BaseUser> _validator;
         private readonly IAuthService _authService;
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public AuthController(IValidator<BaseUser> validator, IAuthService authService)
         {
             _validator = validator;
@@ -41,8 +37,8 @@ namespace Project.Api.Controllers
         /// Регистрация
         /// </summary>
         /// <param name="userReg">Параметры регистрации</param>
-        [HttpPost("reg")]
-        public async Task<IActionResult> Registr([FromQuery] UserReg userReg)
+        [HttpPost("registration")]
+        public async Task<IActionResult> Registration([FromQuery] UserRegParameters userReg)
         {
             await _validator.ValidateAndThrowAsync(userReg);
             var token = await _authService.Registr(userReg);
@@ -58,8 +54,8 @@ namespace Project.Api.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh(string accessToken, string refreshToken)
         {
-            var id = await _authService.Refresh(accessToken, refreshToken);
-            return Ok(id);
+            var token = await _authService.Refresh(accessToken, refreshToken);
+            return Ok(token);
         }
     }
 }

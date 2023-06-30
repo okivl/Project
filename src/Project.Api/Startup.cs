@@ -4,35 +4,27 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Project.Core.Interfaces;
+using Project.Core.Models.CreateUpdate;
 using Project.Core.Options;
-using Project.Core.Options.Params.CreateUpdate;
 using Project.Core.Services;
 using Project.Core.Validation;
 using Project.Infrastructure.Data;
 
 namespace Project.Api
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     public class Startup
     {
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public readonly IConfiguration _configuration;
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public Startup(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<ITokenService, TokenService>();
@@ -115,13 +107,9 @@ namespace Project.Api
             });
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Configure(IApplicationBuilder app, DataContext dataContext)
+        /// <summary/>
+        public void Configure(IApplicationBuilder app)
         {
-            dataContext.Database.Migrate();
-
             app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();

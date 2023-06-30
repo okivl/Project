@@ -1,11 +1,14 @@
 ﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Project.Core.Extensions;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.Sort.Base;
+using Project.Core.Models.SearchContexts;
 using Project.Infrastructure.Data;
 
 namespace Project.Core.Services
 {
+    /// <inheritdoc cref="IReportService"/>
     public class ReportService : IReportService
     {
         private readonly DataContext _context;
@@ -17,23 +20,19 @@ namespace Project.Core.Services
             _userService = userService;
         }
 
-        public async Task<byte[]> ReportGenerate(DateRange dataRange)
+        public async Task<byte[]> ReportGenerate(SearchContext dataRange)
         {
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Отчет");
-            var currentRow = 1;
-            worksheet.Cell(currentRow, 1).Value = "Id дохода";
-            worksheet.Cell(currentRow, 2).Value = "Наименование дохода";
-            worksheet.Cell(currentRow, 3).Value = "Сумма";
-            worksheet.Cell(currentRow, 4).Value = "Id расхода";
-            worksheet.Cell(currentRow, 5).Value = "Наименование расхода";
-            worksheet.Cell(currentRow, 6).Value = "Сумма";
+
+            worksheet.AddTableHeaders();
 
             var user = await _userService.GetUserInfo();
 
             var incomes = await _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User)
-                .Where(i => i.CreateDate >= dataRange.DateFrom && i.CreateDate <= dataRange.DateTo && i.User.Id == user.Id).ToListAsync();
+                .Where(i => i.CreatedAt >= dataRange.DateFrom && i.CreatedAt <= dataRange.DateTo && i.User.Id == user.Id).ToListAsync();
 
+            var currentRow = 1;
             foreach (var income in incomes)
             {
                 currentRow++;
@@ -44,7 +43,7 @@ namespace Project.Core.Services
 
 
             var expenses = await _context.Expenses.Include(i => i.ExpenseType)
-                .Where(i => i.CreateDate >= dataRange.DateFrom && i.CreateDate <= dataRange.DateTo && i.User.Id == user.Id).ToListAsync();
+                .Where(i => i.CreatedAt >= dataRange.DateFrom && i.CreatedAt <= dataRange.DateTo && i.User.Id == user.Id).ToListAsync();
 
             currentRow = 1;
             foreach (var expense in expenses)
@@ -63,9 +62,12 @@ namespace Project.Core.Services
             return content;
         }
 
-        public async Task ReportUpload()
+        public async Task ReportUpload(IFormFile file)
         {
-            var workbook = new XLWorkbook(@"D:\Отчет.xlsx");
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream);
+            var workbook = new XLWorkbook(stream);
+
             var worksheet = workbook.Worksheet("Отчет");
 
             int numberOfLastRow = worksheet.Column(1).LastCellUsed().WorksheetRow().RowNumber();

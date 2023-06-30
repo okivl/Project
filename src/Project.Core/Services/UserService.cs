@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.CreateUpdate;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
-using Project.Entities.Models;
+using Project.Core.Models.CreateUpdate;
+using Project.Core.Models.Enums;
+using Project.Core.Models.SearchContexts;
+using Project.Entities;
 using Project.Infrastructure.Data;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace Project.Core.Services
 {
+    /// <inheritdoc cref="IUserService"/>
     public class UserService : IUserService
     {
         private readonly DataContext _context;
@@ -23,32 +24,31 @@ namespace Project.Core.Services
             _tokenService = tokenService;
         }
 
-        public async Task<List<User>> GetAll(UserSort sortBy, Pagination pagination)
+        public async Task<List<User>> GetAll(AdminUserSearchContext searchContext)
         {
             var users = _context.Users.AsQueryable();
 
-            switch (sortBy)
+            switch (searchContext.Sort)
             {
-                case UserSort.None:
+                case UserSearchSort.None:
                     break;
-                case UserSort.Name:
+                case UserSearchSort.Name:
                     users = users.OrderBy(i => i.FirstName);
                     break;
-                case UserSort.Surname:
+                case UserSearchSort.Surname:
                     users = users.OrderBy(i => i.Surname);
                     break;
-                case UserSort.DateBirth:
+                case UserSearchSort.DateBirth:
                     users = users.OrderBy(i => i.DateBirth);
                     break;
-                case UserSort.Email:
+                case UserSearchSort.Email:
                     users = users.OrderBy(i => i.Email);
                     break;
             }
 
-            if (pagination.Page.HasValue && pagination.PageSize.HasValue)
-            {
-                users = users.Skip((int)((pagination.Page - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
-            }
+            users = searchContext.Order == OrderSort.Ascending ? users : users.Reverse();
+
+            users = users.Skip((searchContext.Page - 1) * searchContext.PageSize).Take(searchContext.PageSize);
 
             return await users.ToListAsync();
         }
@@ -71,7 +71,7 @@ namespace Project.Core.Services
             return user;
         }
 
-        public async Task Create(AdminUserCreate userCreate)
+        public async Task Create(AdminUserCreateParameters userCreate)
         {
             var user = new User
             {
@@ -84,8 +84,8 @@ namespace Project.Core.Services
                 Login = userCreate.Login,
                 Password = BCryptNet.HashPassword(userCreate.Password),
                 Role = userCreate.Role,
-                CreationTime = DateTime.UtcNow,
-                UpdateTime = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             user.RefreshToken = _tokenService.GenerateRefreshToken();
@@ -95,7 +95,7 @@ namespace Project.Core.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(Guid Id, AdminUserUpdate userUpdate)
+        public async Task Update(Guid Id, AdminUserUpdateParameters userUpdate)
         {
             var updateUser = await _context.Users.FindAsync(Id) ?? throw new Exception("User not found");
 
@@ -105,12 +105,12 @@ namespace Project.Core.Services
             updateUser.DateBirth = userUpdate.DateBirth;
             updateUser.Email = userUpdate.Email;
             updateUser.Role = userUpdate.Role;
-            updateUser.UpdateTime = DateTime.UtcNow;
+            updateUser.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateUser(BaseUserUpdate userUpdate)
+        public async Task UpdateUser(BaseUserUpdateParameters userUpdate)
         {
             var updateUser = await GetUserInfo();
 
@@ -119,7 +119,7 @@ namespace Project.Core.Services
             updateUser.LastName = userUpdate.LastName;
             updateUser.DateBirth = userUpdate.DateBirth;
             updateUser.Email = userUpdate.Email;
-            updateUser.UpdateTime = DateTime.UtcNow;
+            updateUser.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
         }

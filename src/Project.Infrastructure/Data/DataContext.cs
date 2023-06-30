@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Project.Entities.Models;
+using Project.Entities;
 
 namespace Project.Infrastructure.Data
 {

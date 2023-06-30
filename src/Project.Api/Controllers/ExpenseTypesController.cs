@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
+using Project.Core.Models.SearchContexts;
 
 namespace Project.Api.Controllers
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
@@ -16,9 +13,7 @@ namespace Project.Api.Controllers
     {
         private readonly IExpenseTypeService _expenseTypeService;
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public ExpenseTypesController(IExpenseTypeService expenseTypeService)
         {
             _expenseTypeService = expenseTypeService;
@@ -27,12 +22,11 @@ namespace Project.Api.Controllers
         /// <summary>
         /// Получение списка всех категорий расхода
         /// </summary>
-        /// /// <param name="sortBy">Параметры сортировки</param>
-        /// <param name="pagination">Параметры пагинации</param>
+        /// <param name="searchContext">Параметры поиска</param>
         [HttpGet]
-        public async Task<IActionResult> GetAll(TypeSort sortBy, [FromQuery] Pagination pagination)
+        public async Task<IActionResult> GetAll([FromQuery] IncomeExpenseTypeSearchContext searchContext)
         {
-            var expenseTypes = await _expenseTypeService.GetAll(pagination, sortBy);
+            var expenseTypes = await _expenseTypeService.GetAll(searchContext);
             return Ok(expenseTypes);
         }
 

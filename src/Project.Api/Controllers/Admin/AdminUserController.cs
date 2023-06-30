@@ -2,15 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.CreateUpdate;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
+using Project.Core.Models.CreateUpdate;
+using Project.Core.Models.SearchContexts;
 
 namespace Project.Api.Controllers.Admin
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
@@ -19,9 +16,7 @@ namespace Project.Api.Controllers.Admin
         private readonly IValidator<BaseUser> _validator;
         private readonly IUserService _userService;
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public AdminUserController(IValidator<BaseUser> validator, IUserService userService)
         {
             _validator = validator;
@@ -31,12 +26,11 @@ namespace Project.Api.Controllers.Admin
         /// <summary>
         /// Получение списка всех пользователей
         /// </summary>
-        /// <param name="sortBy">Параметры сортировки</param>
-        /// <param name="pagination">Параметры пагинации</param>
+        /// <param name="searchContext">Параметры поиска</param>
         [HttpGet]
-        public async Task<IActionResult> GetAll(UserSort sortBy, [FromQuery] Pagination pagination)
+        public async Task<IActionResult> GetAll([FromQuery] AdminUserSearchContext searchContext)
         {
-            var users = await _userService.GetAll(sortBy, pagination);
+            var users = await _userService.GetAll(searchContext);
             return Ok(users);
         }
 
@@ -57,7 +51,7 @@ namespace Project.Api.Controllers.Admin
         /// </summary>
         /// <param name="userCreate">Параметры создания пользователя</param>
         [HttpPost]
-        public async Task<IActionResult> Create([FromQuery] AdminUserCreate userCreate)
+        public async Task<IActionResult> Create([FromQuery] AdminUserCreateParameters userCreate)
         {
             await _validator.ValidateAndThrowAsync(userCreate);
             await _userService.Create(userCreate);
@@ -71,7 +65,7 @@ namespace Project.Api.Controllers.Admin
         /// <param name="id">Индентификатор пользователя</param>
         /// <param name="userUpdate">Параметры обновления данных о пользователе</param>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromQuery] AdminUserUpdate userUpdate)
+        public async Task<IActionResult> Update(Guid id, [FromQuery] AdminUserUpdateParameters userUpdate)
         {
             await _userService.Update(id, userUpdate);
             return Ok();

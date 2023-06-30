@@ -1,6 +1,6 @@
-﻿namespace Project.Core.Options
+﻿namespace Project.Core.Models
 {
-    public class AuthResp
+    public class AuthResponseDto
     {
         public string? AccessToken { get; set; }
         public string? RefreshToken { get; set; }

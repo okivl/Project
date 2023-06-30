@@ -1,9 +1,9 @@
-﻿using Project.Entities.Models;
+﻿using Project.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace Project.Core.Options.Params.CreateUpdate
+namespace Project.Core.Models.CreateUpdate
 {
-    public class AdminUserCreate : BaseUser
+    public class AdminUserCreateParameters : BaseUser
     {
         [Required]
         public string FirstName { get; set; }

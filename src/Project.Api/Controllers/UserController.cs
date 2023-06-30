@@ -2,13 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.CreateUpdate;
+using Project.Core.Models.CreateUpdate;
 
 namespace Project.Api.Controllers
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
@@ -17,9 +15,7 @@ namespace Project.Api.Controllers
         private readonly IUserService _userService;
         private readonly IValidator<BaseUser> _validator;
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public UserController(IValidator<BaseUser> validator, IUserService userService)
         {
             _validator = validator;
@@ -42,7 +38,7 @@ namespace Project.Api.Controllers
         /// </summary>
         /// <param name="userUpdate">Параметры обновления своих данных пользователем</param>
         [HttpPut("selfchange")]
-        public async Task<IActionResult> UpdateUser([FromQuery] BaseUserUpdate userUpdate)
+        public async Task<IActionResult> UpdateUser([FromQuery] BaseUserUpdateParameters userUpdate)
         {
             await _userService.UpdateUser(userUpdate);
 
