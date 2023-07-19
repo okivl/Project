@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Models.CreateUpdate;
 using Project.Core.Models.Enums;
@@ -20,7 +21,7 @@ namespace Project.Core.Services
             _userService = userService;
         }
 
-        public async Task<List<Income>> AdminGetUserIncomes(AdminIncomeExpenseSearchContext searchContext)
+        public async Task<List<Income>> GetAll(AdminIncomeExpenseSearchContext searchContext)
         {
             var incomes = _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User)
                 .Where(i => i.CreatedAt >= searchContext.DateFrom && i.CreatedAt <= searchContext.DateTo);
@@ -46,6 +47,9 @@ namespace Project.Core.Services
                 case AdminIncomeExpenseSort.User:
                     incomes = incomes.OrderBy(i => i.User.FirstName);
                     break;
+                default:
+                    incomes = incomes.OrderBy(i => i.Name);
+                    break;
             }
 
             incomes = searchContext.Order == OrderSort.Ascending ? incomes : incomes.Reverse();
@@ -55,7 +59,7 @@ namespace Project.Core.Services
             return await incomes.ToListAsync();
         }
 
-        public async Task<List<Income>> GetAll(IncomeExpenseSearchContext searchContext)
+        public async Task<List<Income>> GetUserIncomes(IncomeExpenseSearchContext searchContext)
         {
             var user = await _userService.GetUserInfo();
 
@@ -85,18 +89,18 @@ namespace Project.Core.Services
 
         public async Task<Income> Get(Guid Id)
         {
-            var income = await _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User).FirstOrDefaultAsync(i => i.Id == Id)
-                ?? throw new Exception("Income not found");
+            var income = await _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User).SingleOrDefaultAsync(i => i.Id == Id)
+                ?? throw new NotFoundException();
 
             return income;
         }
 
-        public async Task Create(IncomeCraeteUpdateParameters incomeCreate)
+        public async Task Create(IncomeCreateParameters incomeCreate)
         {
             var user = await _userService.GetUserInfo();
 
-            var incomeSource = await _context.IncomeSources.FirstOrDefaultAsync(i => i.Id == incomeCreate.IncomeSourceId)
-                ?? throw new Exception("Source not found");
+            var incomeSource = await _context.IncomeSources.SingleOrDefaultAsync(i => i.Id == incomeCreate.IncomeSourceId)
+                ?? throw new NotFoundException();
 
             var income = new Income
             {
@@ -113,13 +117,13 @@ namespace Project.Core.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(Guid Id, IncomeCraeteUpdateParameters incomeUpdate)
+        public async Task Update(Guid Id, IncomeUpdateParameters incomeUpdate)
         {
-            var incomeSource = await _context.IncomeSources.FindAsync(incomeUpdate.IncomeSourceId)
-                ?? throw new Exception("Source not found");
+            var incomeSource = await _context.IncomeSources.SingleOrDefaultAsync(i => i.Id == incomeUpdate.IncomeSourceId)
+                ?? throw new NotFoundException();
 
             var updateIncome = await _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User)
-                .FirstOrDefaultAsync(i => i.Id == Id) ?? throw new Exception("Income not found");
+                .SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             updateIncome.IncomeSource = incomeSource;
 
@@ -132,7 +136,7 @@ namespace Project.Core.Services
 
         public async Task Delete(Guid Id)
         {
-            var income = await _context.Incomes.FindAsync(Id) ?? throw new Exception("Income not found");
+            var income = await _context.Incomes.SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             _context.Incomes.Remove(income);
             await _context.SaveChangesAsync();

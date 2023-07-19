@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Project.Api.Extensions;
 using Project.Core.Interfaces;
 using Project.Core.Models.CreateUpdate;
 using Project.Core.Options;
@@ -110,7 +111,7 @@ namespace Project.Api
         /// <summary/>
         public void Configure(IApplicationBuilder app)
         {
-            app.UseDeveloperExceptionPage();
+            app.UseAppExceptionHandler();
 
             app.UseHttpsRedirection();
             app.UseRouting();

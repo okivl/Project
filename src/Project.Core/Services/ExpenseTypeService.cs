@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Models.Enums;
 using Project.Core.Models.SearchContexts;
@@ -39,7 +40,7 @@ namespace Project.Core.Services
 
         public async Task<ExpenseType> Get(Guid Id)
         {
-            var expenseType = await _context.ExpenseTypes.FindAsync(Id) ?? throw new Exception("Type not found");
+            var expenseType = await _context.ExpenseTypes.SingleOrDefaultAsync(e => e.Id == Id) ?? throw new NotFoundException();
 
             return expenseType;
         }
@@ -57,7 +58,7 @@ namespace Project.Core.Services
 
         public async Task Update(Guid Id, string name)
         {
-            var expenseType = await _context.ExpenseTypes.FindAsync(Id) ?? throw new Exception("Type not found");
+            var expenseType = await _context.ExpenseTypes.SingleOrDefaultAsync(e => e.Id == Id) ?? throw new NotFoundException();
 
             expenseType.Name = name;
             await _context.SaveChangesAsync();
@@ -65,7 +66,7 @@ namespace Project.Core.Services
 
         public async Task Delete(Guid Id)
         {
-            var expenseType = await _context.ExpenseTypes.FindAsync(Id) ?? throw new Exception("Invalid access token");
+            var expenseType = await _context.ExpenseTypes.SingleOrDefaultAsync(e => e.Id == Id) ?? throw new NotFoundException();
 
             _context.ExpenseTypes.Remove(expenseType);
             await _context.SaveChangesAsync();

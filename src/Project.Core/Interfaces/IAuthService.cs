@@ -21,7 +21,7 @@ namespace Project.Core.Interfaces
         /// </summary>
         /// <param name="userReg">Параметры авторизации</param>
         /// <returns>Access и Refresh токены</returns>
-        Task<AuthResponseDto> Registr(UserRegParameters userReg);
+        Task<AuthResponseDto> Registration(UserRegParameters userReg);
 
         /// <summary>
         /// Обновление просроченного токена доступа

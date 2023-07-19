@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Models.CreateUpdate;
 using Project.Core.Models.Enums;
@@ -44,6 +45,9 @@ namespace Project.Core.Services
                 case UserSearchSort.Email:
                     users = users.OrderBy(i => i.Email);
                     break;
+                default:
+                    users = users.OrderBy(i => i.Surname);
+                    break;
             }
 
             users = searchContext.Order == OrderSort.Ascending ? users : users.Reverse();
@@ -55,18 +59,19 @@ namespace Project.Core.Services
 
         public async Task<User> Get(Guid Id)
         {
-            var user = await _context.Users.FindAsync(Id) ?? throw new Exception("User not found");
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == Id) ?? throw new NotFoundException();
 
             return user;
         }
 
         public async Task<User> GetUserInfo()
         {
-            var httpContext = _httpContextAccessor.HttpContext ?? throw new Exception("No HttpContext");
+            var httpContext = _httpContextAccessor.HttpContext ?? throw new NotFoundException();
 
-            var idClaim = httpContext.User.Claims.FirstOrDefault(c => c.Type == "id") ?? throw new Exception("No Claims");
+            var idClaim = httpContext.User.Claims.FirstOrDefault(c => c.Type == "id") ?? throw new NotFoundException();
 
-            var user = await _context.Users.FindAsync(Guid.Parse(idClaim.Value)) ?? throw new Exception("User not found");
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == Guid.Parse(idClaim.Value))
+                ?? throw new NotFoundException();
 
             return user;
         }
@@ -97,7 +102,7 @@ namespace Project.Core.Services
 
         public async Task Update(Guid Id, AdminUserUpdateParameters userUpdate)
         {
-            var updateUser = await _context.Users.FindAsync(Id) ?? throw new Exception("User not found");
+            var updateUser = await _context.Users.SingleOrDefaultAsync(u => u.Id == Id) ?? throw new NotFoundException();
 
             updateUser.FirstName = userUpdate.FirstName;
             updateUser.Surname = userUpdate.Surname;
@@ -126,7 +131,7 @@ namespace Project.Core.Services
 
         public async Task UpdatePassword(Guid Id, BaseUser password)
         {
-            var updateUser = await _context.Users.FindAsync(Id) ?? throw new Exception("User not found");
+            var updateUser = await _context.Users.SingleOrDefaultAsync(u => u.Id == Id) ?? throw new NotFoundException();
 
             updateUser.Password = BCryptNet.HashPassword(password.Password);
             await _context.SaveChangesAsync();
@@ -142,7 +147,7 @@ namespace Project.Core.Services
 
         public async Task Delete(Guid Id)
         {
-            var user = await _context.Users.FindAsync(Id) ?? throw new Exception("User not found");
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == Id) ?? throw new NotFoundException();
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }

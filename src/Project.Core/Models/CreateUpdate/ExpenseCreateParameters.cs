@@ -2,12 +2,12 @@
 
 namespace Project.Core.Models.CreateUpdate
 {
-    public class IncomeCraeteUpdateParameters
+    public class ExpenseCreateParameters
     {
         [Required]
         public string Name { get; set; }
         [Required]
         public decimal Amount { get; set; }
-        public Guid IncomeSourceId { get; set; }
+        public Guid ExpenseTypeId { get; set; }
     }
 }

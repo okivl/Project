@@ -14,14 +14,14 @@ namespace Project.Core.Interfaces
         /// </summary>
         /// <param name="searchContext">Параметры поиска</param>
         /// <returns>Список доходов пользователей</returns>
-        Task<List<Income>> AdminGetUserIncomes(AdminIncomeExpenseSearchContext searchContext);
+        Task<List<Income>> GetAll(AdminIncomeExpenseSearchContext searchContext);
 
         /// <summary>
         /// Получение всех доходов пользователем
         /// </summary>
         /// <param name="searchContext">Параметры поиска</param>
         /// <returns>Список доходов пользователя</returns>
-        Task<List<Income>> GetAll(IncomeExpenseSearchContext searchContext);
+        Task<List<Income>> GetUserIncomes(IncomeExpenseSearchContext searchContext);
 
         /// <summary>
         /// Получение дохода по идентификатору
@@ -35,14 +35,14 @@ namespace Project.Core.Interfaces
         /// </summary>
         /// <param name="incomeCreate">Параметры создания дохода</param>
         /// <returns></returns>
-        Task Create(IncomeCraeteUpdateParameters incomeCreate);
+        Task Create(IncomeCreateParameters incomeCreate);
 
         /// <summary>
         /// Обновление дохода
         /// </summary>
         /// <param name="Id">Идентификатор дохода</param>
         /// <param name="incomeUpdate"></param>
-        Task Update(Guid Id, IncomeCraeteUpdateParameters incomeUpdate);
+        Task Update(Guid Id, IncomeUpdateParameters incomeUpdate);
 
         /// <summary>
         /// Удаление дохода

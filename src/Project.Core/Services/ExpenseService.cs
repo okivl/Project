@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Models.CreateUpdate;
 using Project.Core.Models.Enums;
@@ -22,7 +23,7 @@ namespace Project.Core.Services
 
 
 
-        public async Task<List<Expense>> AdminGetUserExpenses(AdminIncomeExpenseSearchContext searchContext)
+        public async Task<List<Expense>> GetAll(AdminIncomeExpenseSearchContext searchContext)
         {
             var expenses = _context.Expenses.Include(i => i.ExpenseType).Include(u => u.User)
                 .Where(i => i.CreatedAt >= searchContext.DateFrom && i.CreatedAt <= searchContext.DateTo);
@@ -48,6 +49,9 @@ namespace Project.Core.Services
                 case AdminIncomeExpenseSort.User:
                     expenses = expenses.OrderBy(i => i.User.FirstName);
                     break;
+                default:
+                    expenses = expenses.OrderBy(i => i.Name);
+                    break;
             }
 
             expenses = searchContext.Order == OrderSort.Ascending ? expenses : expenses.Reverse();
@@ -57,7 +61,7 @@ namespace Project.Core.Services
             return await expenses.ToListAsync();
         }
 
-        public async Task<List<Expense>> GetAll(IncomeExpenseSearchContext searchContext)
+        public async Task<List<Expense>> GetUserExpenses(IncomeExpenseSearchContext searchContext)
         {
             var user = await _userService.GetUserInfo();
 
@@ -89,17 +93,17 @@ namespace Project.Core.Services
         public async Task<Expense> Get(Guid Id)
         {
             var expense = await _context.Expenses.Include(i => i.ExpenseType).Include(u => u.User)
-                .FirstOrDefaultAsync(i => i.Id == Id) ?? throw new Exception("Expense not found");
+                .SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             return expense;
         }
 
-        public async Task Create(ExpenseCreateUpdateParameters expenseCreate)
+        public async Task Create(ExpenseCreateParameters expenseCreate)
         {
             var user = await _userService.GetUserInfo();
 
-            var expenseType = await _context.ExpenseTypes.FirstOrDefaultAsync(i => i.Id == expenseCreate.ExpenseTypeId)
-                ?? throw new Exception("Type not found");
+            var expenseType = await _context.ExpenseTypes.SingleOrDefaultAsync(i => i.Id == expenseCreate.ExpenseTypeId)
+                ?? throw new NotFoundException();
 
             var expense = new Expense
             {
@@ -116,13 +120,13 @@ namespace Project.Core.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(Guid Id, ExpenseCreateUpdateParameters expenseUpdate)
+        public async Task Update(Guid Id, ExpenseUpdateParameters expenseUpdate)
         {
-            var expenseType = await _context.ExpenseTypes.FindAsync(expenseUpdate.ExpenseTypeId)
-                ?? throw new Exception("Type not found");
+            var expenseType = await _context.ExpenseTypes.SingleOrDefaultAsync(e => e.Id == expenseUpdate.ExpenseTypeId)
+                ?? throw new NotFoundException();
 
             var updateExpense = await _context.Expenses.Include(i => i.ExpenseType).Include(u => u.User)
-                .FirstOrDefaultAsync(i => i.Id == Id) ?? throw new Exception("Expense not found");
+                .SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             updateExpense.ExpenseType = expenseType;
 
@@ -135,7 +139,7 @@ namespace Project.Core.Services
 
         public async Task Delete(Guid Id)
         {
-            var expense = await _context.Expenses.FindAsync(Id) ?? throw new Exception("Expense not found");
+            var expense = await _context.Expenses.SingleOrDefaultAsync(e => e.Id == Id) ?? throw new NotFoundException();
 
             _context.Expenses.Remove(expense);
             await _context.SaveChangesAsync();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project.Core.Interfaces;
+using Project.Core.Models;
 using Project.Core.Models.SearchContexts;
 
 namespace Project.Api.Controllers
@@ -23,7 +24,11 @@ namespace Project.Api.Controllers
         /// Получение отчета по расходам и доходам
         /// </summary>
         /// <param name="dateRange">Параметры фильтрации по дате</param>
+        /// <response code="200">Создание отчета</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpGet("report")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
         public async Task<IActionResult> ReportGenerate([FromQuery] SearchContext dateRange)
         {
             var fileBytes = await _reportService.ReportGenerate(dateRange);
@@ -33,7 +38,11 @@ namespace Project.Api.Controllers
         /// <summary>
         /// Загрузка отредактированного отчета
         /// </summary>
+        /// <response code="200">Загрузка отчета</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpPut("get_new_report")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
         public async Task<IActionResult> ReportUpload(IFormFile file)
         {
             await _reportService.ReportUpload(file);

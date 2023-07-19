@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Models.Enums;
 using Project.Core.Models.SearchContexts;
@@ -41,7 +42,7 @@ namespace Project.Core.Services
         public async Task<IncomeSource> Get(Guid Id)
         {
             var incomeSource = await _context.IncomeSources
-                .FirstOrDefaultAsync(i => i.Id == Id) ?? throw new Exception("Source not found");
+                .SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             return incomeSource;
         }
@@ -63,7 +64,7 @@ namespace Project.Core.Services
         public async Task Update(Guid Id, String name)
         {
             var incomeSource = await _context.IncomeSources
-                .FirstOrDefaultAsync(i => i.Id == Id) ?? throw new Exception("Source not found");
+                .SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             incomeSource.Name = name;
 
@@ -72,7 +73,7 @@ namespace Project.Core.Services
 
         public async Task Delete(Guid Id)
         {
-            var incomeSource = await _context.IncomeSources.FindAsync(Id) ?? throw new Exception("Source not found");
+            var incomeSource = await _context.IncomeSources.SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             _context.IncomeSources.Remove(incomeSource);
 

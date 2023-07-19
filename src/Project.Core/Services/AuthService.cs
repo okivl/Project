@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Models;
 using Project.Core.Models.CreateUpdate;
@@ -26,9 +27,9 @@ namespace Project.Core.Services
 
         public async Task<AuthResponseDto> Login(string email, string password)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == email) ?? throw new NotFoundException();
 
-            if (user == null || !BCryptNet.Verify(password, user.Password)) throw new Exception("Wrong pass");
+            if (!BCryptNet.Verify(password, user.Password)) throw new WrongPasswordException();
 
             var claims = new List<Claim>
             {
@@ -51,12 +52,10 @@ namespace Project.Core.Services
             return response;
         }
 
-        public async Task<AuthResponseDto> Registr(UserRegParameters userReg)
+        public async Task<AuthResponseDto> Registration(UserRegParameters userReg)
         {
-            var test = await _context.Users.FirstOrDefaultAsync(u => u.Login == userReg.Login);
-            if (test != null) throw new Exception("User already exist");
-
-            if (userReg.Password != userReg.PasswordConfirm) throw new Exception("Passwords don't match");
+            var test = await _context.Users.SingleOrDefaultAsync(u => u.Login == userReg.Login);
+            if (test != null) throw new AlreadyExistException();
 
             var user = new User
             {
@@ -98,14 +97,14 @@ namespace Project.Core.Services
         public async Task<AuthResponseDto> Refresh(string accessToken, string refreshToken)
         {
             var principal = _tokenService.GetPrincipalFromExpiredToken(accessToken);
-            var calimId = principal.FindFirst(c => c.Type == "id") ?? throw new Exception("Invalid access token");
+            var calimId = principal.FindFirst(c => c.Type == "id") ?? throw new InvalidTokenException();
 
             var id = calimId.Value;
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Id.ToString() == id);
 
             if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
-                throw new Exception("Invalid access token or refresh token");
+                throw new InvalidTokenException();
             }
 
             var claims = new List<Claim>

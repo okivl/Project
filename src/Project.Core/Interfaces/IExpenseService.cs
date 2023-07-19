@@ -14,14 +14,14 @@ namespace Project.Core.Interfaces
         /// </summary>
         /// <param name="searchContext">Парметры поиска</param>
         /// <returns>Список расходов пользователей</returns>
-        Task<List<Expense>> AdminGetUserExpenses(AdminIncomeExpenseSearchContext searchContext);
+        Task<List<Expense>> GetAll(AdminIncomeExpenseSearchContext searchContext);
 
         /// <summary>
         /// Получение всех расходов пользователем
         /// </summary>
         /// <param name="searchContext">Парметры поиска</param>
         /// <returns>Список расходов пользователея</returns>
-        Task<List<Expense>> GetAll(IncomeExpenseSearchContext searchContext);
+        Task<List<Expense>> GetUserExpenses(IncomeExpenseSearchContext searchContext);
 
         /// <summary>
         /// Получение расхода по идентификатору
@@ -34,14 +34,14 @@ namespace Project.Core.Interfaces
         /// Создание расхода
         /// </summary>
         /// <param name="expenseCreate">Параметры создания расхода</param>
-        Task Create(ExpenseCreateUpdateParameters expenseCreate);
+        Task Create(ExpenseCreateParameters expenseCreate);
 
         /// <summary>
         /// Обновление расхода
         /// </summary>
         /// <param name="Id">Идентификатор расхода</param>
         /// <param name="expenseUpdate">Параметры редактирования расхода</param>
-        Task Update(Guid Id, ExpenseCreateUpdateParameters expenseUpdate);
+        Task Update(Guid Id, ExpenseUpdateParameters expenseUpdate);
 
         /// <summary>
         /// Удаление расхода

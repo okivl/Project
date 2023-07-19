@@ -17,6 +17,7 @@ namespace Project.Core.Models.CreateUpdate
         [Required]
         public string Login { get; set; }
         [Required]
+        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
         public string PasswordConfirm { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Extensions;
 using Project.Core.Interfaces;
 using Project.Core.Models.SearchContexts;
@@ -77,8 +78,8 @@ namespace Project.Core.Services
                 var incomeId = new Guid(worksheet.Cell(i, 1).Value.ToString());
 
                 var income = await _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User)
-                    .FirstOrDefaultAsync(j => j.Id == incomeId)
-                    ?? throw new Exception("Income not found");
+                    .SingleOrDefaultAsync(j => j.Id == incomeId)
+                    ?? throw new NotFoundException();
 
                 income.Name = worksheet.Cell(i, 2).Value.ToString();
 
@@ -92,8 +93,8 @@ namespace Project.Core.Services
                 var expenseId = new Guid(worksheet.Cell(i, 4).Value.ToString());
 
                 var expense = await _context.Expenses.Include(i => i.ExpenseType).Include(u => u.User)
-                    .FirstOrDefaultAsync(j => j.Id == expenseId)
-                    ?? throw new Exception("Expense not found");
+                    .SingleOrDefaultAsync(j => j.Id == expenseId)
+                    ?? throw new NotFoundException();
 
                 expense.Name = worksheet.Cell(i, 5).Value.ToString();
 
