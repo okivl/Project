@@ -1,13 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.CreateUpdate;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
-using Project.Entities.Models;
+using Project.Core.Models.CreateUpdate;
+using Project.Core.Models.Enums;
+using Project.Core.Models.SearchContexts;
+using Project.Entities;
 using Project.Infrastructure.Data;
 
 namespace Project.Core.Services
 {
+    /// <inheritdoc cref="IIncomeService"/>
     public class IncomeService : IIncomeService
     {
         private readonly DataContext _context;
@@ -19,17 +21,17 @@ namespace Project.Core.Services
             _userService = userService;
         }
 
-        public async Task<List<Income>> AdminGetUserIncomes(DateRange dateRange, AdminIncomeExpenseSort sortBy, Pagination pagination, Guid? Id)
+        public async Task<List<Income>> GetAll(AdminIncomeExpenseSearchContext searchContext)
         {
             var incomes = _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User)
-                .Where(i => i.CreateDate >= dateRange.DateFrom && i.CreateDate <= dateRange.DateTo);
+                .Where(i => i.CreatedAt >= searchContext.DateFrom && i.CreatedAt <= searchContext.DateTo);
 
-            //if (Id != Guid.Empty)
-            //{
-            //    incomes = incomes.Where(i => i.User.Id == Id);
-            //}
+            if (searchContext.Id != Guid.Empty)
+            {
+                incomes = incomes.Where(i => i.User.Id == searchContext.Id);
+            }
 
-            switch (sortBy)
+            switch (searchContext.Sort)
             {
                 case AdminIncomeExpenseSort.None:
                     break;
@@ -45,60 +47,60 @@ namespace Project.Core.Services
                 case AdminIncomeExpenseSort.User:
                     incomes = incomes.OrderBy(i => i.User.FirstName);
                     break;
+                default:
+                    incomes = incomes.OrderBy(i => i.Name);
+                    break;
             }
 
-            if (pagination.Page.HasValue && pagination.PageSize.HasValue)
-            {
-                incomes = incomes.Skip((int)((pagination.Page - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
-            }
+            incomes = searchContext.Order == OrderSort.Ascending ? incomes : incomes.Reverse();
+
+            incomes = incomes.Skip((searchContext.Page - 1) * searchContext.PageSize).Take(searchContext.PageSize);
 
             return await incomes.ToListAsync();
         }
 
-        public async Task<List<Income>> GetAll(DateRange dateRange, IncomeExpenseSort sortBy, Pagination pagination)
+        public async Task<List<Income>> GetUserIncomes(IncomeExpenseSearchContext searchContext)
         {
             var user = await _userService.GetUserInfo();
 
             var incomes = _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User)
-                .Where(i => i.CreateDate >= dateRange.DateFrom && i.CreateDate <= dateRange.DateTo && i.User.Id == user.Id);
+                .Where(i => i.CreatedAt >= searchContext.DateFrom && i.CreatedAt <= searchContext.DateTo && i.User.Id == user.Id);
 
-            switch (sortBy)
+            switch (searchContext.Sort)
             {
-                case IncomeExpenseSort.None:
+                case IncomeExpenseSearchSort.None:
                     break;
-                case IncomeExpenseSort.Name:
+                case IncomeExpenseSearchSort.Name:
                     incomes = incomes.OrderBy(i => i.Name);
                     break;
-                case IncomeExpenseSort.Amount:
+                case IncomeExpenseSearchSort.Amount:
                     incomes = incomes.OrderBy(i => i.Amount);
                     break;
-                case IncomeExpenseSort.Type:
+                case IncomeExpenseSearchSort.Type:
                     incomes = incomes.OrderBy(i => i.IncomeSource.Name);
                     break;
             }
+            incomes = searchContext.Order == OrderSort.Ascending ? incomes : incomes.Reverse();
 
-            if (pagination.Page.HasValue && pagination.PageSize.HasValue)
-            {
-                incomes = incomes.Skip((int)((pagination.Page - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
-            }
+            incomes = incomes.Skip((searchContext.Page - 1) * searchContext.PageSize).Take(searchContext.PageSize);
 
             return await incomes.ToListAsync();
         }
 
         public async Task<Income> Get(Guid Id)
         {
-            var income = await _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User).FirstOrDefaultAsync(i => i.Id == Id)
-                ?? throw new Exception("Income not found");
+            var income = await _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User).SingleOrDefaultAsync(i => i.Id == Id)
+                ?? throw new NotFoundException();
 
             return income;
         }
 
-        public async Task Create(IncomeCU incomeCreate)
+        public async Task Create(IncomeCreateParameters incomeCreate)
         {
             var user = await _userService.GetUserInfo();
 
-            var incomeSource = await _context.IncomeSources.FirstOrDefaultAsync(i => i.Id == incomeCreate.IncomeSourceId)
-                ?? throw new Exception("Source not found");
+            var incomeSource = await _context.IncomeSources.SingleOrDefaultAsync(i => i.Id == incomeCreate.IncomeSourceId)
+                ?? throw new NotFoundException();
 
             var income = new Income
             {
@@ -107,34 +109,34 @@ namespace Project.Core.Services
                 Amount = incomeCreate.Amount,
                 IncomeSource = incomeSource,
                 User = user,
-                CreateDate = DateTime.UtcNow,
-                UpdateDate = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             await _context.Incomes.AddAsync(income);
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(Guid Id, IncomeCU incomeUpdate)
+        public async Task Update(Guid Id, IncomeUpdateParameters incomeUpdate)
         {
-            var incomeSource = await _context.IncomeSources.FindAsync(incomeUpdate.IncomeSourceId)
-                ?? throw new Exception("Source not found");
+            var incomeSource = await _context.IncomeSources.SingleOrDefaultAsync(i => i.Id == incomeUpdate.IncomeSourceId)
+                ?? throw new NotFoundException();
 
             var updateIncome = await _context.Incomes.Include(i => i.IncomeSource).Include(u => u.User)
-                .FirstOrDefaultAsync(i => i.Id == Id) ?? throw new Exception("Income not found");
+                .SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             updateIncome.IncomeSource = incomeSource;
 
             updateIncome.Name = incomeUpdate.Name;
             updateIncome.Amount = incomeUpdate.Amount;
-            updateIncome.UpdateDate = DateTime.UtcNow;
+            updateIncome.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
         }
 
         public async Task Delete(Guid Id)
         {
-            var income = await _context.Incomes.FindAsync(Id) ?? throw new Exception("Income not found");
+            var income = await _context.Incomes.SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             _context.Incomes.Remove(income);
             await _context.SaveChangesAsync();

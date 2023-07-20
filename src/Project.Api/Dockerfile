@@ -20,4 +20,6 @@ RUN dotnet publish "Project.Api.csproj" -c Release -o /app/publish /p:UseAppHost
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV ASPNETCORE_URLS http://*:80
+EXPOSE 80
 ENTRYPOINT ["dotnet", "Project.Api.dll"]

@@ -1,12 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
-using Project.Entities.Models;
+using Project.Core.Models.Enums;
+using Project.Core.Models.SearchContexts;
+using Project.Entities;
 using Project.Infrastructure.Data;
 
 namespace Project.Core.Services
 {
+    /// <inheritdoc cref="IIncomeSourceService"/>
     public class IncomeSourceService : IIncomeSourceService
     {
         private readonly DataContext _context;
@@ -17,24 +19,22 @@ namespace Project.Core.Services
         }
 
 
-        public async Task<List<IncomeSource>> GetAll(Pagination pagination, TypeSort sortBy)
+        public async Task<List<IncomeSource>> GetAll(IncomeExpenseTypeSearchContext searchContext)
         {
-
             var sources = _context.IncomeSources.AsQueryable();
 
-            switch (sortBy)
+            switch (searchContext.Sort)
             {
-                case TypeSort.None:
+                case TypeSearchSort.None:
                     break;
-                case TypeSort.Name:
+                case TypeSearchSort.Name:
                     sources = sources.OrderBy(i => i.Name);
                     break;
             }
 
-            if (pagination.Page.HasValue && pagination.PageSize.HasValue)
-            {
-                sources = sources.Skip((int)((pagination.Page - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
-            }
+            sources = searchContext.Order == OrderSort.Ascending ? sources : sources.Reverse();
+
+            sources = sources.Skip((searchContext.Page - 1) * searchContext.PageSize).Take(searchContext.PageSize);
 
             return await sources.ToListAsync();
         }
@@ -42,7 +42,7 @@ namespace Project.Core.Services
         public async Task<IncomeSource> Get(Guid Id)
         {
             var incomeSource = await _context.IncomeSources
-                .FirstOrDefaultAsync(i => i.Id == Id) ?? throw new Exception("Source not found");
+                .SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             return incomeSource;
         }
@@ -64,7 +64,7 @@ namespace Project.Core.Services
         public async Task Update(Guid Id, String name)
         {
             var incomeSource = await _context.IncomeSources
-                .FirstOrDefaultAsync(i => i.Id == Id) ?? throw new Exception("Source not found");
+                .SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             incomeSource.Name = name;
 
@@ -73,7 +73,7 @@ namespace Project.Core.Services
 
         public async Task Delete(Guid Id)
         {
-            var incomeSource = await _context.IncomeSources.FindAsync(Id) ?? throw new Exception("Source not found");
+            var incomeSource = await _context.IncomeSources.SingleOrDefaultAsync(i => i.Id == Id) ?? throw new NotFoundException();
 
             _context.IncomeSources.Remove(incomeSource);
 

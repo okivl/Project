@@ -1,12 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Project.Core.Exeptions;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
-using Project.Entities.Models;
+using Project.Core.Models.Enums;
+using Project.Core.Models.SearchContexts;
+using Project.Entities;
 using Project.Infrastructure.Data;
 
 namespace Project.Core.Services
 {
+    /// <inheritdoc cref="IExpenseTypeService"/>
     public class ExpenseTypeService : IExpenseTypeService
     {
         private readonly DataContext _context;
@@ -16,30 +18,29 @@ namespace Project.Core.Services
             _context = context;
         }
 
-        public async Task<List<ExpenseType>> GetAll(Pagination pagination, TypeSort sortBy)
+        public async Task<List<ExpenseType>> GetAll(IncomeExpenseTypeSearchContext searchContext)
         {
             var types = _context.ExpenseTypes.AsQueryable();
 
-            switch (sortBy)
+            switch (searchContext.Sort)
             {
-                case TypeSort.None:
+                case TypeSearchSort.None:
                     break;
-                case TypeSort.Name:
+                case TypeSearchSort.Name:
                     types = types.OrderBy(i => i.Name);
                     break;
             }
 
-            if (pagination.Page.HasValue && pagination.PageSize.HasValue)
-            {
-                types = types.Skip((int)((pagination.Page - 1) * pagination.PageSize)).Take((int)pagination.PageSize);
-            }
+            types = searchContext.Order == OrderSort.Ascending ? types : types.Reverse();
+
+            types = types.Skip(((searchContext.Page - 1) * searchContext.PageSize)).Take(searchContext.PageSize);
 
             return await types.ToListAsync();
         }
 
         public async Task<ExpenseType> Get(Guid Id)
         {
-            var expenseType = await _context.ExpenseTypes.FindAsync(Id) ?? throw new Exception("Type not found");
+            var expenseType = await _context.ExpenseTypes.SingleOrDefaultAsync(e => e.Id == Id) ?? throw new NotFoundException();
 
             return expenseType;
         }
@@ -57,7 +58,7 @@ namespace Project.Core.Services
 
         public async Task Update(Guid Id, string name)
         {
-            var expenseType = await _context.ExpenseTypes.FindAsync(Id) ?? throw new Exception("Type not found");
+            var expenseType = await _context.ExpenseTypes.SingleOrDefaultAsync(e => e.Id == Id) ?? throw new NotFoundException();
 
             expenseType.Name = name;
             await _context.SaveChangesAsync();
@@ -65,7 +66,7 @@ namespace Project.Core.Services
 
         public async Task Delete(Guid Id)
         {
-            var expenseType = await _context.ExpenseTypes.FindAsync(Id) ?? throw new Exception("Invalid access token");
+            var expenseType = await _context.ExpenseTypes.SingleOrDefaultAsync(e => e.Id == Id) ?? throw new NotFoundException();
 
             _context.ExpenseTypes.Remove(expenseType);
             await _context.SaveChangesAsync();

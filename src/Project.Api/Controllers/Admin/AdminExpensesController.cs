@@ -1,24 +1,21 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.CreateUpdate;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
+using Project.Core.Models;
+using Project.Core.Models.CreateUpdate;
+using Project.Core.Models.SearchContexts;
+using Project.Entities;
 
 namespace Project.Api.Controllers.Admin
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     [Authorize(Roles = "Admin")]
-    [Route("api/[controller]")]
+    [Route("api/admin/expenses/")]
     [ApiController]
     public class AdminExpensesController : ControllerBase
     {
         private readonly IExpenseService _expenseService;
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public AdminExpensesController(IExpenseService expenseService)
         {
             _expenseService = expenseService;
@@ -27,15 +24,18 @@ namespace Project.Api.Controllers.Admin
         /// <summary>
         /// Получение данных о всех расходах пользователей
         /// </summary>
-        /// <param name="dateRange">Параметры фильтрации по дате</param>
-        /// <param name="sortBy">Параметры сортировки</param>
-        /// <param name="pagination">Параметры пагинации</param>
-        /// <param name="id">Идентификатор пользователя</param>
-        [HttpGet("/all_expenses")]
-        public async Task<IActionResult> AdminGetUserExpenses([FromQuery] DateRange dateRange, AdminIncomeExpenseSort sortBy, [FromQuery] Pagination pagination, Guid? id)
+        /// <param name="searchContext">Параметры поиска</param>
+        /// <response code="200">Получение списка расходов</response>
+        /// <response code="400">Некорректный запрос</response>
+        /// <response code="500">Ошибка сервера</response>
+        [HttpGet("all")]
+        [ProducesResponseType(typeof(List<Expense>), 200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 400)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
+        public async Task<IActionResult> GetAll([FromQuery] AdminIncomeExpenseSearchContext searchContext)
         {
-            if (!id.HasValue) id = Guid.Empty;
-            var expense = await _expenseService.AdminGetUserExpenses(dateRange, sortBy, pagination, id);
+            var expense = await _expenseService.GetAll(searchContext);
+
             return Ok(expense);
         }
 
@@ -43,7 +43,15 @@ namespace Project.Api.Controllers.Admin
         /// Получение данных о расходе по идентификатору
         /// </summary>
         /// <param name="id">Идентификатор расхода</param>
+        /// <response code="200">Получение расхода</response>
+        /// <response code="400">Некорректный запрос</response>
+        /// <response code="404">Не найдено</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(Expense), 200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 400)]
+        [ProducesResponseType(typeof(ExceptionResponse), 404)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
         public async Task<IActionResult> Get(Guid id)
         {
             var expense = await _expenseService.Get(id);
@@ -55,8 +63,14 @@ namespace Project.Api.Controllers.Admin
         /// Сохранение расхода
         /// </summary>
         /// <param name="expenseCreate">Параметры создания расхода</param>
+        /// <response code="200">Создание расхода</response>
+        /// <response code="404">Не найдено</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpPost]
-        public async Task<IActionResult> Create([FromQuery] ExpenseCU expenseCreate)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 404)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
+        public async Task<IActionResult> Create([FromQuery] ExpenseCreateParameters expenseCreate)
         {
             await _expenseService.Create(expenseCreate);
 
@@ -68,8 +82,14 @@ namespace Project.Api.Controllers.Admin
         /// </summary>
         /// <param name="id">Идентификатор расхода</param>
         /// <param name="expenseCreate">Параметры обновления расхода</param>
+        /// <response code="200">Обновление расхода</response>
+        /// <response code="404">Не найдено</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromQuery] ExpenseCU expenseCreate)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 404)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
+        public async Task<IActionResult> Update(Guid id, [FromQuery] ExpenseUpdateParameters expenseCreate)
         {
             await _expenseService.Update(id, expenseCreate);
             return Ok();
@@ -79,7 +99,13 @@ namespace Project.Api.Controllers.Admin
         /// Удаление расхода по идентификатору
         /// </summary>
         /// <param name="id">Идентификатор расхода</param>
+        /// <response code="200">Удаление расхода</response>
+        /// <response code="404">Не найдено</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpDelete("{id}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 404)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _expenseService.Delete(id);

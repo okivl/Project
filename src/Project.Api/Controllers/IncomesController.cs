@@ -1,25 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project.Core.Interfaces;
-using Project.Core.Options.Params.CreateUpdate;
-using Project.Core.Options.Params.Sort;
-using Project.Core.Options.Params.Sort.Base;
+using Project.Core.Models;
+using Project.Core.Models.CreateUpdate;
+using Project.Core.Models.SearchContexts;
+using Project.Entities;
 
 namespace Project.Api.Controllers
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary/>
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/incomes")]
     [ApiController]
     public class IncomesController : ControllerBase
     {
         private readonly IIncomeService _incomeService;
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary/>
         public IncomesController(IIncomeService incomeService)
         {
             _incomeService = incomeService;
@@ -28,13 +25,17 @@ namespace Project.Api.Controllers
         /// <summary>
         /// Получение списка всех доходов за период
         /// </summary> 
-        /// <param name="dateRange">Параметры фильтрации по дате</param>
-        /// <param name="sortBy">Параметры сортировки</param>
-        /// <param name="pagination">Параметры пагинации</param>
+        /// <param name="searchContext">Параметры поиска</param>
+        /// <response code="200">Получение списка доходов</response>
+        /// <response code="400">Некорректный запрос</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] DateRange dateRange, IncomeExpenseSort sortBy, [FromQuery] Pagination pagination)
+        [ProducesResponseType(typeof(List<Income>), 200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 400)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
+        public async Task<IActionResult> GetUserIncomes([FromQuery] IncomeExpenseSearchContext searchContext)
         {
-            var incomes = await _incomeService.GetAll(dateRange, sortBy, pagination);
+            var incomes = await _incomeService.GetUserIncomes(searchContext);
             return Ok(incomes);
         }
 
@@ -42,7 +43,15 @@ namespace Project.Api.Controllers
         /// Получение данных о доходе по идентификатору
         /// </summary>
         /// <param name="id">Идентификатор дохода</param>
+        /// <response code="200">Получение дохода</response>
+        /// <response code="400">Некорректный запрос</response>
+        /// <response code="404">Не найдено</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(Income), 200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 400)]
+        [ProducesResponseType(typeof(ExceptionResponse), 404)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
         public async Task<IActionResult> Get(Guid id)
         {
             var income = await _incomeService.Get(id);
@@ -54,8 +63,14 @@ namespace Project.Api.Controllers
         /// Сохранение дохода
         /// </summary>
         /// <param name="incomeCreate">Параметры создания дохода</param>
+        /// <response code="200">Создание дохода</response>
+        /// <response code="404">Не найдено</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpPost]
-        public async Task<IActionResult> Create([FromQuery] IncomeCU incomeCreate)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 404)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
+        public async Task<IActionResult> Create([FromQuery] IncomeCreateParameters incomeCreate)
         {
             await _incomeService.Create(incomeCreate);
 
@@ -67,8 +82,14 @@ namespace Project.Api.Controllers
         /// </summary>
         /// <param name="id">Идентификатор дохода</param>
         /// <param name="incomeUpdate">Параметры обновления дохода</param>
+        /// <response code="200">Обновление дохода</response>
+        /// <response code="404">Не найдено</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromQuery] IncomeCU incomeUpdate)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 404)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
+        public async Task<IActionResult> Update(Guid id, [FromQuery] IncomeUpdateParameters incomeUpdate)
         {
             await _incomeService.Update(id, incomeUpdate);
             return Ok();
@@ -78,7 +99,13 @@ namespace Project.Api.Controllers
         /// Удаление источника дохода по идентификатору
         /// </summary>
         /// <param name="id">Идентификатор дохода</param>
+        /// <response code="200">Удаление расхода</response>
+        /// <response code="404">Не найдено</response>
+        /// <response code="500">Ошибка сервера</response>
         [HttpDelete("{id}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(ExceptionResponse), 404)]
+        [ProducesResponseType(typeof(ExceptionResponse), 500)]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _incomeService.Delete(id);

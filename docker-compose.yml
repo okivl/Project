@@ -12,8 +12,7 @@ services:
       context: .
       dockerfile: src/Project.Api/Dockerfile
     ports:
-        - "8000:80"
-        - "44348:443"
+        - "5555:80"
     networks:
         - api_to_db
     depends_on:
@@ -29,8 +28,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 111
       POSTGRES_DB: FinanceDb
-    ports:
-        - "5432:5432"
     networks:
         - api_to_db
     volumes:

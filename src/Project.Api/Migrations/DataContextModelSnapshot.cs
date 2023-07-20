@@ -22,7 +22,7 @@ namespace Project.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Project.Entities.Models.Expense", b =>
+            modelBuilder.Entity("Project.Entities.Expense", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -31,7 +31,7 @@ namespace Project.Api.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("ExpenseTypeId")
@@ -41,7 +41,7 @@ namespace Project.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdateDate")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("UserId")
@@ -56,7 +56,7 @@ namespace Project.Api.Migrations
                     b.ToTable("Expenses");
                 });
 
-            modelBuilder.Entity("Project.Entities.Models.ExpenseType", b =>
+            modelBuilder.Entity("Project.Entities.ExpenseType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -71,7 +71,7 @@ namespace Project.Api.Migrations
                     b.ToTable("ExpenseTypes");
                 });
 
-            modelBuilder.Entity("Project.Entities.Models.Income", b =>
+            modelBuilder.Entity("Project.Entities.Income", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -80,7 +80,7 @@ namespace Project.Api.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("IncomeSourceId")
@@ -90,7 +90,7 @@ namespace Project.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdateDate")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("UserId")
@@ -105,7 +105,7 @@ namespace Project.Api.Migrations
                     b.ToTable("Incomes");
                 });
 
-            modelBuilder.Entity("Project.Entities.Models.IncomeSource", b =>
+            modelBuilder.Entity("Project.Entities.IncomeSource", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -120,13 +120,13 @@ namespace Project.Api.Migrations
                     b.ToTable("IncomeSources");
                 });
 
-            modelBuilder.Entity("Project.Entities.Models.User", b =>
+            modelBuilder.Entity("Project.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreationTime")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("DateBirth")
@@ -166,7 +166,7 @@ namespace Project.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
@@ -174,15 +174,15 @@ namespace Project.Api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Project.Entities.Models.Expense", b =>
+            modelBuilder.Entity("Project.Entities.Expense", b =>
                 {
-                    b.HasOne("Project.Entities.Models.ExpenseType", "ExpenseType")
+                    b.HasOne("Project.Entities.ExpenseType", "ExpenseType")
                         .WithMany()
                         .HasForeignKey("ExpenseTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Project.Entities.Models.User", "User")
+                    b.HasOne("Project.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -193,15 +193,15 @@ namespace Project.Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Project.Entities.Models.Income", b =>
+            modelBuilder.Entity("Project.Entities.Income", b =>
                 {
-                    b.HasOne("Project.Entities.Models.IncomeSource", "IncomeSource")
+                    b.HasOne("Project.Entities.IncomeSource", "IncomeSource")
                         .WithMany()
                         .HasForeignKey("IncomeSourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Project.Entities.Models.User", "User")
+                    b.HasOne("Project.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
