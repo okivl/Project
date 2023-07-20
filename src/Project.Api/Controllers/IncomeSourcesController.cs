@@ -9,7 +9,7 @@ namespace Project.Api.Controllers
 {
     /// <summary/>
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/income_sources")]
     [ApiController]
     public class IncomeSourcesController : ControllerBase
     {

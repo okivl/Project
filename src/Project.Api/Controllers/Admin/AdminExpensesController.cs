@@ -10,7 +10,7 @@ namespace Project.Api.Controllers.Admin
 {
     /// <summary/>
     [Authorize(Roles = "Admin")]
-    [Route("api/[controller]")]
+    [Route("api/admin/expenses/")]
     [ApiController]
     public class AdminExpensesController : ControllerBase
     {
@@ -28,7 +28,7 @@ namespace Project.Api.Controllers.Admin
         /// <response code="200">Получение списка расходов</response>
         /// <response code="400">Некорректный запрос</response>
         /// <response code="500">Ошибка сервера</response>
-        [HttpGet("/all_expenses")]
+        [HttpGet("all")]
         [ProducesResponseType(typeof(List<Expense>), 200)]
         [ProducesResponseType(typeof(ExceptionResponse), 400)]
         [ProducesResponseType(typeof(ExceptionResponse), 500)]

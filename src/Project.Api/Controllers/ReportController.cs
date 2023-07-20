@@ -8,7 +8,7 @@ namespace Project.Api.Controllers
 {
     /// <summary/>
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/report")]
     [ApiController]
     public class ReportController : ControllerBase
     {
@@ -26,7 +26,7 @@ namespace Project.Api.Controllers
         /// <param name="dateRange">Параметры фильтрации по дате</param>
         /// <response code="200">Создание отчета</response>
         /// <response code="500">Ошибка сервера</response>
-        [HttpGet("report")]
+        [HttpGet("download")]
         [ProducesResponseType(200)]
         [ProducesResponseType(typeof(ExceptionResponse), 500)]
         public async Task<IActionResult> ReportGenerate([FromQuery] SearchContext dateRange)
@@ -40,7 +40,7 @@ namespace Project.Api.Controllers
         /// </summary>
         /// <response code="200">Загрузка отчета</response>
         /// <response code="500">Ошибка сервера</response>
-        [HttpPut("get_new_report")]
+        [HttpPut("upload")]
         [ProducesResponseType(200)]
         [ProducesResponseType(typeof(ExceptionResponse), 500)]
         public async Task<IActionResult> ReportUpload(IFormFile file)

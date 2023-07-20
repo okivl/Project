@@ -7,7 +7,7 @@ using Project.Core.Models.CreateUpdate;
 namespace Project.Api.Controllers
 {
     /// <summary/>
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {

@@ -10,7 +10,7 @@ namespace Project.Api.Controllers
 {
     /// <summary/>
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/expense")]
     [ApiController]
     public class ExpensesController : ControllerBase
     {

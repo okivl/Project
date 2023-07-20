@@ -11,7 +11,7 @@ namespace Project.Api.Controllers.Admin
 {
     /// <summary/>
     [Authorize(Roles = "Admin")]
-    [Route("api/[controller]")]
+    [Route("api/admin/user")]
     [ApiController]
     public class AdminUserController : ControllerBase
     {
