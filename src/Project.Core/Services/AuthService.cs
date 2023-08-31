@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Models;
@@ -16,13 +15,11 @@ namespace Project.Core.Services
     {
         private readonly DataContext _context;
         private readonly ITokenService _tokenService;
-        private readonly IHttpContextAccessor _contextAccessor;
 
-        public AuthService(DataContext context, ITokenService tokenService, IHttpContextAccessor contextAccessor)
+        public AuthService(DataContext context, ITokenService tokenService)
         {
             _context = context;
             _tokenService = tokenService;
-            _contextAccessor = contextAccessor;
         }
 
         public async Task<AuthResponseDto> Login(string email, string password)
