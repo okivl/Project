@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using Moq.EntityFrameworkCore;
 using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Models.CreateUpdate;
@@ -13,18 +14,36 @@ using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace Project.UnitTests.Services
 {
-    public class UserServiceTests : IDisposable
+    public class UserServiceTests
     {
-        private readonly DataContext _context;
         private readonly IUserService _userService;
 
         public UserServiceTests()
         {
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
+            var user = new List<User>
+            {
+                new User
+                {
+                Id = Guid.Parse("00000001-0001-0001-0001-000000000001"),
+                FirstName = "Test",
+                Surname = "Test",
+                LastName = "Test",
+                DateBirth = DateTime.UtcNow,
+                Email = "test@test.com",
+                Login = "test@test.com",
+                Password = BCryptNet.HashPassword("testpass"),
+                Role = Roles.User,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                RefreshToken = "",
+                RefreshTokenExpiryTime = DateTime.UtcNow,
+                }
+            };
 
-            _context = new DataContext(options);
+            var mockContextOptions = new DbContextOptions<DataContext>();
+
+            var mockContext = new Mock<DataContext>(mockContextOptions);
+            mockContext.Setup(mc => mc.Users).ReturnsDbSet(user);
 
             var tokenServiceMock = new Mock<ITokenService>();
             tokenServiceMock.Setup(ts => ts.GenerateAccessToken(It.IsAny<List<Claim>>())).Returns("fakeAccessToken");
@@ -39,26 +58,7 @@ namespace Project.UnitTests.Services
                     new Claim("role", "User")
                 });
 
-            _userService = new UserService(_context, httpContexAccessorMock.Object, tokenServiceMock.Object);
-
-            var user = new User
-            {
-                Id = Guid.Parse("00000001-0001-0001-0001-000000000001"),
-                FirstName = "Test",
-                Surname = "Test",
-                LastName = "Test",
-                DateBirth = DateTime.UtcNow,
-                Email = "test@test.com",
-                Login = "test@test.com",
-                Password = BCryptNet.HashPassword("testpass"),
-                Role = Roles.User,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                RefreshToken = "",
-                RefreshTokenExpiryTime = DateTime.UtcNow,
-            };
-            _context.Users.Add(user);
-            _context.SaveChangesAsync();
+            _userService = new UserService(mockContext.Object, httpContexAccessorMock.Object, tokenServiceMock.Object);
         }
 
         [Fact]
@@ -108,13 +108,6 @@ namespace Project.UnitTests.Services
 
             // Assert
             await Assert.ThrowsAsync<NotFoundException>(() => response);
-        }
-
-        public void Dispose()
-        {
-            _context.Database.EnsureDeleted();
-            _context.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

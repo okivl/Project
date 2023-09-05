@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Moq;
+using Moq.EntityFrameworkCore;
 using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Services;
@@ -10,24 +11,16 @@ using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace Project.UnitTests.Services
 {
-    public class ExpenseServiceTests : IDisposable
+    public class IncomeServiceTests
     {
-        private readonly DataContext _context;
-        private readonly IExpenseService _expenseService;
+        private readonly IIncomeService _incomeService;
 
-        public ExpenseServiceTests()
+        public IncomeServiceTests()
         {
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
-
-            _context = new DataContext(options);
-
-            var userServiceMock = new Mock<IUserService>();
-
-            _expenseService = new ExpenseService(userServiceMock.Object, _context);
-            var user = new User
+            var user = new List<User>
             {
+                new User
+                {
                 Id = Guid.Parse("00000001-0001-0001-0001-000000000001"),
                 FirstName = "Test",
                 Surname = "Test",
@@ -41,40 +34,55 @@ namespace Project.UnitTests.Services
                 UpdatedAt = DateTime.UtcNow,
                 RefreshToken = "",
                 RefreshTokenExpiryTime = DateTime.UtcNow,
+                }
             };
 
-            var type = new ExpenseType
+            var source = new List<IncomeSource>
             {
+                new IncomeSource
+                {
                 Id = Guid.Parse("00000001-0001-0001-0001-000000000001"),
                 Name = "Test",
+                }
             };
 
-            var expense = new Expense
+            var income = new List<Income>
             {
+                new Income
+                {
                 Id = Guid.Parse("00000001-0001-0001-0001-000000000001"),
                 Name = "Test",
                 Amount = 1,
-                ExpenseType = type,
-                User = user,
+                IncomeSource = source[0],
+                User = user[0],
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
+                }
             };
 
-            _context.Add(expense);
-            _context.SaveChangesAsync();
+            var mockContextOptions = new DbContextOptions<DataContext>();
+
+            var mockContext = new Mock<DataContext>(mockContextOptions);
+            mockContext.Setup(mc => mc.Users).ReturnsDbSet(user);
+            mockContext.Setup(mc => mc.IncomeSources).ReturnsDbSet(source);
+            mockContext.Setup(mc => mc.Incomes).ReturnsDbSet(income);
+
+            var userServiceMock = new Mock<IUserService>();
+
+            _incomeService = new IncomeService(userServiceMock.Object, mockContext.Object);
         }
 
         [Fact]
-        public async Task Get_ValidReturns_Expense()
+        public async Task Get_ValidReturns_Income()
         {
             // Arrange
 
             // Act
-            var response = await _expenseService.Get(Guid.Parse("00000001-0001-0001-0001-000000000001"));
+            var response = await _incomeService.Get(Guid.Parse("00000001-0001-0001-0001-000000000001"));
 
             // Assert
             Assert.NotNull(response);
-            Assert.IsType<Expense>(response);
+            Assert.IsType<Income>(response);
             Assert.Equal("Test", response.Name);
         }
 
@@ -84,17 +92,10 @@ namespace Project.UnitTests.Services
             // Arrange
 
             // Act
-            var response = _expenseService.Get(Guid.Parse("00000011-0001-0001-0001-000000000001"));
+            var response = _incomeService.Get(Guid.Parse("00000011-0001-0001-0001-000000000001"));
 
             // Assert
             await Assert.ThrowsAsync<NotFoundException>(() => response);
-        }
-
-        public void Dispose()
-        {
-            _context.Database.EnsureDeleted();
-            _context.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

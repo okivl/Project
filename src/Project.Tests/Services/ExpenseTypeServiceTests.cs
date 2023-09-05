@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Moq;
+using Moq.EntityFrameworkCore;
 using Project.Core.Exeptions;
 using Project.Core.Interfaces;
 using Project.Core.Services;
@@ -8,28 +10,27 @@ using Xunit;
 
 namespace Project.UnitTests.Services
 {
-    public class ExpenseTypeServiceTests : IDisposable
+    public class ExpenseTypeServiceTests
     {
-        private readonly DataContext _context;
         private readonly IExpenseTypeService _expenseTypeService;
 
         public ExpenseTypeServiceTests()
         {
-            var options = new DbContextOptionsBuilder<DataContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
-
-            _context = new DataContext(options);
-
-            _expenseTypeService = new ExpenseTypeService(_context);
-
-            var expenseType = new ExpenseType
+            var expenseType = new List<ExpenseType>
             {
+                new ExpenseType
+                {
                 Id = Guid.Parse("00000001-0001-0001-0001-000000000001"),
-                Name = "Test",
+                Name = "Test"
+                }
             };
-            _context.Add(expenseType);
-            _context.SaveChangesAsync();
+
+            var mockContextOptions = new DbContextOptions<DataContext>();
+
+            var mockContext = new Mock<DataContext>(mockContextOptions);
+            mockContext.SetupGet(mc => mc.ExpenseTypes).ReturnsDbSet(expenseType);
+
+            _expenseTypeService = new ExpenseTypeService(mockContext.Object);
         }
 
         [Fact]
@@ -68,13 +69,6 @@ namespace Project.UnitTests.Services
 
             // Assert
             await Assert.ThrowsAsync<NotFoundException>(() => response);
-        }
-
-        public void Dispose()
-        {
-            _context.Database.EnsureDeleted();
-            _context.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }
